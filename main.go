@@ -66,17 +66,17 @@ var db *gorm.DB
 var err error
 
 var (
-	drivers = []Driver{
-		{Name: "Jimmy Johnson", License: "ABC123"},
-		{Name: "Howard Hills", License: "XYZ789"},
-		{Name: "Craig Colbin", License: "DEF333"},
-	}
-	cars = []Car{
-		{Year: 2000, Make: "Toyota", ModelName: "Tundra", DriverID: 1},
-		{Year: 2001, Make: "Honda", ModelName: "Accord", DriverID: 1},
-		{Year: 2002, Make: "Nissan", ModelName: "Sentra", DriverID: 2},
-		{Year: 2003, Make: "Ford", ModelName: "F-150", DriverID: 3},
-	}
+	// drivers = []Driver{
+	// 	{Name: "Jimmy Johnson", License: "ABC123"},
+	// 	{Name: "Howard Hills", License: "XYZ789"},
+	// 	{Name: "Craig Colbin", License: "DEF333"},
+	// }
+	// cars = []Car{
+	// 	{Year: 2000, Make: "Toyota", ModelName: "Tundra", DriverID: 1},
+	// 	{Year: 2001, Make: "Honda", ModelName: "Accord", DriverID: 1},
+	// 	{Year: 2002, Make: "Nissan", ModelName: "Sentra", DriverID: 2},
+	// 	{Year: 2003, Make: "Ford", ModelName: "F-150", DriverID: 3},
+	// }
 
 	users = []User{
 		{UserID: 1, Username: "student", Password: "kocham piwo"},
@@ -161,13 +161,15 @@ func main() {
 
 	/** rest handlers */
 	router := mux.NewRouter()
-	router.HandleFunc("/cars", GetCars).Methods("GET")
-	router.HandleFunc("/cars/{id}", GetCar).Methods("GET")
-	router.HandleFunc("/drivers/{id}", GetDriver).Methods("GET")
-	router.HandleFunc("/cars/{id}", DeleteCar).Methods("DELETE")
+	// router.HandleFunc("/cars", GetCars).Methods("GET")
+	// router.HandleFunc("/cars/{id}", GetCar).Methods("GET")
+	// router.HandleFunc("/drivers/{id}", GetDriver).Methods("GET")
+	// router.HandleFunc("/cars/{id}", DeleteCar).Methods("DELETE")
 
 	router.HandleFunc("/users", GetUsers).Methods("GET")
 	router.HandleFunc("/users/{id}", GetUser).Methods("GET")
+	router.HandleFunc("/users", CreateUser).Methods("POST")
+	router.HandleFunc("/users/{id}", UpdateUser).Methods("PUT")
 	router.HandleFunc("/users/{id}", DeleteUser).Methods("DELETE")
 
 	router.HandleFunc("/images", GetImages).Methods("GET")
@@ -228,7 +230,11 @@ func DeleteCar(w http.ResponseWriter, r *http.Request) {
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	var users []User
 	db.Find(&users)
-	json.NewEncoder(w).Encode(&users)
+	if err := json.NewEncoder(w).Encode(&users); err != nil {
+		fmt.Println(err)
+		http.Error(w, "Error decoidng response object", http.StatusBadRequest)
+		return
+	}
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
@@ -236,6 +242,32 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	var user User
 	db.First(&user, params["id"])
 	json.NewEncoder(w).Encode(&user)
+}
+
+func CreateUser(w http.ResponseWriter, r *http.Request) {
+	u := User{}
+	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
+		fmt.Println(err)
+		http.Error(w, "Error decoidng response object", http.StatusBadRequest)
+		return
+	}
+
+	users = append(users, u)
+	db.Create(&users[len(users)-1])
+
+	response, err := json.Marshal(&u)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Error encoding response object", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	w.Write(response)
+}
+
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
+
 }
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {

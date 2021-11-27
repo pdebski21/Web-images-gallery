@@ -3,53 +3,79 @@
 ## User resource
 ---------------------------------
 
-curl localhost:8080/users
+**GET all resource object:**
 
-**Access single resource object:**
+> curl localhost:8080/users
 
-curl localhost:8080/users/1
+**GET single resource object:**
 
-**Access single delete object:**
+> curl localhost:8080/users/1
 
-curl -X DELETE localhost:8080/users/1
+**POST single object:**
+
+> curl -XPOST localhost:8080/users -H 'application/json' -d '{"UserID": 100, "Username": "piwo fan", "Password": "lol ale dobre piwo"}'
+
+**UPDATE single object:**
+
+> curl -X PUT localhost:8080/users -H 'application/json' -d '{"UserID": 1, "Username": "piwo fan", "Password": "lol ale dobre piwo"}'
+
+**DELETE single object:**
+
+> curl -X DELETE localhost:8080/users/1
 
 ## Image resource
 ---------------------------------
 
-curl localhost:8080/images
+**GET all resource object:**
 
-**Access single resource object:**
+> curl localhost:8080/images
 
-curl localhost:8080/images/1
+**GET single resource object:**
 
-**Access single delete object:**
+>curl localhost:8080/images/1
 
-curl -X DELETE localhost:8080/images/1
+**POST single object:**
+
+**UPDATE single object:**
+
+**DELETE single object:**
+
+> curl -X DELETE localhost:8080/images/1
 
 ## Comment resource
 ---------------------------------
 
-**Access all resource object:**
+**GET all resource object:**
 
-curl localhost:8080/comments
+> curl localhost:8080/comments
 
-**Access single resource object:**
+**GET single resource object:**
 
-curl localhost:8080/comments/1
+> curl localhost:8080/comments/1
 
-**Access single delete object:**
+**POST single object:**
 
-curl -X DELETE localhost:8080/comments/1
+**UPDATE single object:**
+
+**DELETE single object:**
+
+> curl -X DELETE localhost:8080/comments/1
 
 ## Favourite resource
 ---------------------------------
 
-curl localhost:8080/favourites
+**GET all resource object:**
 
-**Access single resource object:**
+> curl localhost:8080/favourites
 
-curl localhost:8080/favourites/1
+**GET single resource object:**
 
-**Access single delete object:**
+> curl localhost:8080/favourites/1
 
-curl -X DELETE localhost:8080/favourites/1
+**POST single object:**
+
+**UPDATE single object:**
+
+**DELETE single object:**
+
+> curl -X DELETE localhost:8080/favourites/1
