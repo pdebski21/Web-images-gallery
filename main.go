@@ -32,14 +32,14 @@ type Car struct {
 
 type User struct {
 	gorm.Model
-	UserID   int
+	UserID   int `gorm:"primaryKey"`
 	Username string
 	Password string
 }
 
 type Image struct {
 	gorm.Model
-	ImageID  int
+	ImageID  int `gorm:"primaryKey"`
 	Name     string
 	AuthorID int
 	Value    []byte
@@ -48,7 +48,7 @@ type Image struct {
 
 type Comment struct {
 	gorm.Model
-	CommentID int
+	CommentID int `gorm:"primaryKey"`
 	ImageID   int
 	UserID    int
 	Text      string
@@ -57,7 +57,7 @@ type Comment struct {
 
 type Favourite struct {
 	gorm.Model
-	FavouriteID int
+	FavouriteID int `gorm:"primaryKey"`
 	ImageID     int
 	UserID      int
 }
@@ -106,7 +106,16 @@ const (
 )
 
 func main() {
-	router := mux.NewRouter()
+
+	/** image encoding to string and next to html */
+	/*
+		myImage := image.NewRGBA(image.Rect(0, 0, 10, 20))
+		var buff bytes.Buffer
+		png.Encode(&buff, myImage)
+		encodedString := base64.StdEncoding.EncodeToString(buff.Bytes())
+		htmlImage := "<img src=\"data:image/png;base64," + encodedString + "\" />"
+		fmt.Println(htmlImage)
+	*/
 
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
@@ -117,28 +126,29 @@ func main() {
 
 	defer db.Close()
 
-	db.AutoMigrate(&Driver{})
-	db.AutoMigrate(&Car{})
+	//db.AutoMigrate(&Driver{})
+	//db.AutoMigrate(&Car{})
 
 	db.AutoMigrate(&User{})
 	db.AutoMigrate(&Image{})
 	db.AutoMigrate(&Comment{})
 	db.AutoMigrate(&Favourite{})
 
-	for index := range cars {
-		db.Create(&cars[index])
-	}
-
-	for index := range drivers {
-		db.Create(&drivers[index])
-	}
-
-	/** add row to database table */
 	/*
-		for index := range users {
-			db.Create(&users[index])
+		for index := range cars {
+			db.Create(&cars[index])
+		}
+
+		for index := range drivers {
+			db.Create(&drivers[index])
 		}
 	*/
+	/** add row to database table */
+	/*
+	 */
+	for index := range users {
+		db.Create(&users[index])
+	}
 	for index := range images {
 		db.Create(&images[index])
 	}
@@ -150,14 +160,27 @@ func main() {
 	}
 
 	/** rest handlers */
+	router := mux.NewRouter()
 	router.HandleFunc("/cars", GetCars).Methods("GET")
 	router.HandleFunc("/cars/{id}", GetCar).Methods("GET")
 	router.HandleFunc("/drivers/{id}", GetDriver).Methods("GET")
 	router.HandleFunc("/cars/{id}", DeleteCar).Methods("DELETE")
 
+	router.HandleFunc("/users", GetUsers).Methods("GET")
+	router.HandleFunc("/users/{id}", GetUser).Methods("GET")
+	router.HandleFunc("/users/{id}", DeleteUser).Methods("DELETE")
+
+	router.HandleFunc("/images", GetImages).Methods("GET")
+	router.HandleFunc("/images/{id}", GetImage).Methods("GET")
+	router.HandleFunc("/images/{id}", DeleteImage).Methods("DELETE")
+
 	router.HandleFunc("/comments", GetComments).Methods("GET")
 	router.HandleFunc("/comments/{id}", GetComment).Methods("GET")
 	router.HandleFunc("/comments/{id}", DeleteComment).Methods("DELETE")
+
+	router.HandleFunc("/favourites", GetFavourites).Methods("GET")
+	router.HandleFunc("/favourites/{id}", GetFavourite).Methods("GET")
+	router.HandleFunc("/favourites/{id}", DeleteFavourite).Methods("DELETE")
 
 	handler := cors.Default().Handler(router)
 
@@ -202,11 +225,59 @@ func DeleteCar(w http.ResponseWriter, r *http.Request) {
 
 /** Users handlers */
 
+func GetUsers(w http.ResponseWriter, r *http.Request) {
+	var users []User
+	db.Find(&users)
+	json.NewEncoder(w).Encode(&users)
+}
+
+func GetUser(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var user User
+	db.First(&user, params["id"])
+	json.NewEncoder(w).Encode(&user)
+}
+
+func DeleteUser(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var user User
+	db.First(&user, params["id"])
+	db.Delete(&user)
+
+	var users []User
+	db.Find(&users)
+	json.NewEncoder(w).Encode(&users)
+}
+
 /** Images handlers */
+
+func GetImages(w http.ResponseWriter, r *http.Request) {
+	var images []Image
+	db.Find(&images)
+	json.NewEncoder(w).Encode(&images)
+}
+
+func GetImage(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var image Image
+	db.First(&image, params["id"])
+	json.NewEncoder(w).Encode(&image)
+}
+
+func DeleteImage(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var image Image
+	db.First(&image, params["id"])
+	db.Delete(&image)
+
+	var images []Image
+	db.Find(&images)
+	json.NewEncoder(w).Encode(&images)
+}
 
 /** Comments handlers */
 func GetComments(w http.ResponseWriter, r *http.Request) {
-	var comments []Comment
+	var comments []Image
 	db.Find(&comments)
 	json.NewEncoder(w).Encode(&comments)
 }
@@ -230,3 +301,27 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 }
 
 /** Favourites handlers */
+
+func GetFavourites(w http.ResponseWriter, r *http.Request) {
+	var favourites []Favourite
+	db.Find(&favourites)
+	json.NewEncoder(w).Encode(&favourites)
+}
+
+func GetFavourite(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var favourite Favourite
+	db.First(&favourite, params["id"])
+	json.NewEncoder(w).Encode(&favourite)
+}
+
+func DeleteFavourite(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var favourite Favourite
+	db.First(&favourite, params["id"])
+	db.Delete(&favourite)
+
+	var favourites []Favourite
+	db.Find(&favourites)
+	json.NewEncoder(w).Encode(&favourites)
+}
