@@ -50,7 +50,7 @@ type Comment struct {
 	ImageID   int `gorm:"foreignKey"`
 	UserID    int `gorm:"foreignKey"`
 	Text      string
-	RepliesTO int // replies to -> commentID
+	RepliesTO int `gorm:"foreignKey"` // replies to -> commentID
 }
 
 type Favourite struct {
