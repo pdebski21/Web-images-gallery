@@ -31,35 +31,32 @@ type Car struct {
 /** our database types */
 
 type User struct {
-	gorm.Model
 	UserID   int `gorm:"primaryKey"`
 	Username string
 	Password string
 }
 
 type Image struct {
-	gorm.Model
-	ImageID  int `gorm:"primaryKey"`
-	Name     string
-	AuthorID int
-	Value    []byte
-	Grade    int
+	ImageID   int `gorm:"primaryKey"`
+	Name      string
+	AuthorID  int    `gorm:"foreignKey"`
+	Value     string // Changed to string, because we'll be storing base64 representations anyway.
+	Extension string
+	Grade     int
 }
 
 type Comment struct {
-	gorm.Model
 	CommentID int `gorm:"primaryKey"`
-	ImageID   int
-	UserID    int
+	ImageID   int `gorm:"foreignKey"`
+	UserID    int `gorm:"foreignKey"`
 	Text      string
 	RepliesTO int // replies to -> commentID
 }
 
 type Favourite struct {
-	gorm.Model
 	FavouriteID int `gorm:"primaryKey"`
-	ImageID     int
-	UserID      int
+	ImageID     int `gorm:"foreignKey"`
+	UserID      int `gorm:"foreignKey"`
 }
 
 var db *gorm.DB
@@ -83,7 +80,14 @@ var (
 		{UserID: 2, Username: "student2", Password: "też kocham piwo"},
 	}
 	images = []Image{
-		{ImageID: 1, Name: "testo z pomaranczami", AuthorID: 1, Value: []byte{}, Grade: 10},
+		{
+			ImageID:   1,
+			Name:      "testo z pomaranczami",
+			AuthorID:  1,
+			Value:     "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==",
+			Extension: "png",
+			Grade:     10,
+		},
 	}
 	comments = []Comment{
 		{CommentID: 1, ImageID: 1, UserID: 1, Text: "masz począstuj się", RepliesTO: 0},
