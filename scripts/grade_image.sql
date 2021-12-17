@@ -1,0 +1,1 @@
+INSERT INTO grades (image_id, user_id, grade) VALUES (1, 1, 7);
