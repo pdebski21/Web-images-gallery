@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
@@ -31,32 +32,41 @@ type Car struct {
 /** our database types */
 
 type User struct {
-	UserID   int `gorm:"primaryKey"`
+	ID       int `gorm:"primaryKey"`
 	Username string
 	Password string
 }
 
 type Image struct {
-	ImageID   int `gorm:"primaryKey"`
-	Name      string
-	AuthorID  int    `gorm:"foreignKey"`
-	Value     string // Changed to string, because we'll be storing base64 representations anyway.
-	Extension string
-	Grade     int
+	ID          int `gorm:"primaryKey"` // This version of gorm does not support a basic Date SQL type. What the fuck. Also, tried adding gorm.Model, maybe we'll siphon the date type out. Nope. gorm.Model also uses timestamps.
+	Name        string
+	Description string
+	AuthorID    int    `gorm:"foreignKey"`
+	Value       string // Changed to string, because we'll be storing base64 representations anyway.
+	Extension   string
+	DateAdded   time.Time
 }
 
 type Comment struct {
-	CommentID int `gorm:"primaryKey"`
+	ID        int `gorm:"primaryKey"`
 	ImageID   int `gorm:"foreignKey"`
 	UserID    int `gorm:"foreignKey"`
 	Text      string
-	RepliesTO int `gorm:"foreignKey"` // replies to -> commentID
+	RepliesTo int `gorm:"foreignKey"` // replies to -> commentID
+	DateAdded time.Time
 }
 
 type Favourite struct {
-	FavouriteID int `gorm:"primaryKey"`
-	ImageID     int `gorm:"foreignKey"`
-	UserID      int `gorm:"foreignKey"`
+	ID      int `gorm:"primaryKey"`
+	ImageID int `gorm:"foreignKey"`
+	UserID  int `gorm:"foreignKey"`
+}
+
+type Grade struct {
+	ID      int `gorm:"primaryKey"`
+	ImageID int `gorm:"foreignKey"`
+	UserID  int `gorm:"foreignKey"`
+	Grade   int
 }
 
 var db *gorm.DB
@@ -76,27 +86,30 @@ var (
 	// }
 
 	users = []User{
-		{UserID: 1, Username: "student", Password: "kocham piwo"},
-		{UserID: 2, Username: "student2", Password: "też kocham piwo"},
+		{ID: 1, Username: "student", Password: "kocham piwo"},
+		{ID: 2, Username: "student2", Password: "też kocham piwo"},
 	}
 	images = []Image{
 		{
-			ImageID:   1,
-			Name:      "testo z pomaranczami",
-			AuthorID:  1,
-			Value:     "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==",
-			Extension: "png",
-			Grade:     10,
+			ID:          1,
+			Name:        "testo z pomaranczami",
+			Description: "graphic design is my passion",
+			AuthorID:    1,
+			Value:       "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==",
+			Extension:   "png",
 		},
 	}
 	comments = []Comment{
-		{CommentID: 1, ImageID: 1, UserID: 1, Text: "masz począstuj się", RepliesTO: 0},
-		{CommentID: 2, ImageID: 1, UserID: 2, Text: "nie dziekuje", RepliesTO: 1},
-		{CommentID: 3, ImageID: 1, UserID: 1, Text: "nie dla psa", RepliesTO: 2},
+		{ID: 1, ImageID: 1, UserID: 1, Text: "masz począstuj się", RepliesTo: 0},
+		{ID: 2, ImageID: 1, UserID: 2, Text: "nie dziekuje", RepliesTo: 1},
+		{ID: 3, ImageID: 1, UserID: 1, Text: "nie dla psa", RepliesTo: 2},
 	}
 	favourites = []Favourite{
-		{FavouriteID: 1, ImageID: 1, UserID: 1},
-		{FavouriteID: 2, ImageID: 1, UserID: 2},
+		{ID: 1, ImageID: 1, UserID: 1},
+		{ID: 2, ImageID: 1, UserID: 2},
+	}
+	grades = []Grade{
+		{ID: 1, ImageID: 1, UserID: 1, Grade: 5},
 	}
 )
 
@@ -121,7 +134,7 @@ func main() {
 		fmt.Println(htmlImage)
 	*/
 
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=disable",
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
 	db, err = gorm.Open("postgres", psqlInfo)
 	if err != nil {
@@ -148,20 +161,23 @@ func main() {
 		}
 	*/
 	/** add row to database table */
-	/*
-	 */
-	for index := range users {
-		db.Create(&users[index])
-	}
-	for index := range images {
-		db.Create(&images[index])
-	}
-	for index := range comments {
-		db.Create(&comments[index])
-	}
-	for index := range favourites {
-		db.Create(&favourites[index])
-	}
+
+	// We don't need to insert default shit no mo'.
+	// for index := range users {
+	// 	db.Create(&users[index])
+	// }
+	// for index := range images {
+	// 	db.Create(&images[index])
+	// }
+	// for index := range comments {
+	// 	db.Create(&comments[index])
+	// }
+	// for index := range favourites {
+	// 	db.Create(&favourites[index])
+	// }
+	// for index := range grades {
+	// 	db.Create(&grades[index])
+	// }
 
 	/** rest handlers */
 	router := mux.NewRouter()
